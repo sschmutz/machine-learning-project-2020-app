@@ -52,30 +52,28 @@ class_conditional_probability_plot <- function(headline){
   
   class_cond_prob <-
     class_conditional_probability(headline) %>%
-    anti_join(stop_words_german, by = "word") %>%
+    #anti_join(stop_words_german, by = "word") %>%
     select(word, prob, class) %>%
     unique() %>%
-    mutate(prob_adapted = if_else(class == "nzz", prob * -1, prob))
+    mutate(prob = replace_na(prob, 1/(sum(cond_prob_20min$n)+sum(cond_prob_nzz$n)))) %>%
+    pivot_wider(names_from = class, values_from = prob) %>%
+    mutate(prob_ratio = `20min`/nzz)
   
   largest_diff <-
     class_cond_prob %>%
-    select(word, prob, class) %>%
-    mutate(prob = replace_na(prob, 0)) %>%
-    pivot_wider(names_from = class, values_from = prob) %>%
-    mutate(diff = abs(`20min` - nzz)) %>%
-    arrange(diff) %>%
+    arrange(prob_ratio) %>%
     pull(word)
   
   limit <-
-    class_cond_prob$prob %>%
-    max(na.rm = TRUE)
+    class_cond_prob$prob_ratio %>%
+    max(na.rm = TRUE) + 10
 
   class_cond_prob %>%
     mutate(word = factor(word, largest_diff)) %>%
-    ggplot(aes(x = prob_adapted, y = word)) +
-    geom_col(aes(fill = class), alpha = 0.6) +
-    scale_fill_manual(values = c("#0d2880", "#A40E4C")) +
-    xlim(-limit, limit) +
+    ggplot(aes(x = prob_ratio, y = word)) +
+    geom_col(aes(fill = prob_ratio > 1), alpha = 0.6) +
+    scale_fill_manual(values = c("#A40E4C", "#0d2880")) +
+    scale_x_log10(limits = c(1/limit, limit)) +
     theme_minimal(base_family = "Source Sans Pro",
                   base_size = 16) +
     theme(legend.position = "none",
@@ -84,12 +82,13 @@ class_conditional_probability_plot <- function(headline){
     labs(x = NULL,
          y = NULL,
          fill = NULL,
-         title = "**Class Conditional Probabilities**",
-         subtitle = "(ordered: word with largest difference on top)<br><br><span style='color:#A40E4C'>**NZZ**</span> and <span style='color:#0d2880'>**20min**</span>")
+         title = "**Class Conditional Probabily Ratio**",
+         subtitle = "<span style='color:#A40E4C'>**NZZ**</span> and <span style='color:#0d2880'>**20min**</span>")
   
 }
 
 # headline <- "Grosse Rettungsaktion, weil sich mehrere Personen verirrt haben"
+# headline <- "Künstliche Intelligenz sagt erfolgreich voraus, zu welcher Struktur sich Proteine falten"
 # class_conditional_probability_plot(headline)
 
 
