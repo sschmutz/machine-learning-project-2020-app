@@ -50,7 +50,8 @@ ui <- fluidPage(
     br(),
     
     fluidRow(
-        plotOutput("class_cond_prob")
+      column(width = 8, offset = 2,
+        plotOutput("class_cond_prob"), align = "center")
     ),
     
     br(),
