@@ -11,6 +11,7 @@ library(shiny)
 library(fontawesome)
 library(tidyverse)
 library(tidytext)
+library(ggtext)
 library(here)
 
 source("app-function.R", local = TRUE)
@@ -48,6 +49,11 @@ ui <- fluidPage(
     
     br(),
     
+    fluidRow(
+        plotOutput("class_cond_prob")
+    ),
+    
+    br(),
     
     fluidRow(
         column(width = 12,
@@ -67,8 +73,21 @@ server <- function(input, output) {
         HTML(text_output())
     })
     
-
-
+    plot_output <- eventReactive(input$submit, {
+        class_conditional_probability_plot(input$headline)
+    })
+    
+    output$class_cond_prob <- renderPlot({
+        
+        input$submit
+        
+        # Use isolate() to avoid dependency on input$n
+        isolate({
+            #class_conditional_probability_plot(input$headline)
+            plot_output()
+        })
+    })
+    
 }
 
 # Run the application 
