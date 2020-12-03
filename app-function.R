@@ -12,6 +12,10 @@ prior_prob_nzz <- 0.3668087
 cond_prob_20min <- read_csv("data/cond_prob_20min.csv")
 cond_prob_nzz <- read_csv("data/cond_prob_nzz.csv")
 
+# source: https://github.com/solariz/german_stopwords/blob/master/german_stopwords_plain.txt
+stop_words_german <-
+  read_csv(here("data", "stop_words_german.txt"), col_names = c("word"))
+
 
 # naive bayes classifier --------------------------------------------------
 
@@ -48,6 +52,9 @@ class_conditional_probability_plot <- function(headline){
   
   class_cond_prob <-
     class_conditional_probability(headline) %>%
+    anti_join(stop_words_german, by = "word") %>%
+    select(word, prob, class) %>%
+    unique() %>%
     mutate(prob_adapted = if_else(class == "nzz", prob * -1, prob))
   
   largest_diff <-
@@ -66,13 +73,12 @@ class_conditional_probability_plot <- function(headline){
   class_cond_prob %>%
     mutate(word = factor(word, largest_diff)) %>%
     ggplot(aes(x = prob_adapted, y = word)) +
-    geom_col(aes(fill = class), alpha = 0.6, col = "grey50") +
+    geom_col(aes(fill = class), alpha = 0.6) +
     scale_fill_manual(values = c("#0d2880", "#A40E4C")) +
     xlim(-limit, limit) +
     theme_minimal(base_family = "Source Sans Pro",
-                  base_size = 14) +
+                  base_size = 16) +
     theme(legend.position = "none",
-          #plot.title.position = "plot",
           plot.title = element_markdown(hjust = 0.5),
           plot.subtitle = element_markdown(hjust = 0.5)) + 
     labs(x = NULL,
