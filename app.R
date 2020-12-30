@@ -25,7 +25,7 @@ ui <- fluidPage(
     fluidRow(
         column(width = 12, 
                tags$div(align = "right", 
-                        a(href = "https://github.com/sschmutz/machine-learning-project-2020/blob/main/presentation/classifying_headlines.pdf", 
+                        a(href = "https://github.com/sschmutz/machine-learning-project-2020-app", 
                           h4(fa("github", fill = "#B9BABD"))
                         )
                )
